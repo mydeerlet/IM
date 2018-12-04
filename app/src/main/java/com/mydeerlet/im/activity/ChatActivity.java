@@ -7,9 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.Gson;
 import com.mydeerlet.im.R;
 import com.mydeerlet.im.adapter.MsgAdapter;
 import com.mydeerlet.im.bean.Msg;
+import com.mydeerlet.im.bean.User;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,14 +43,13 @@ public class ChatActivity extends AppCompatActivity {
     private InputStream is;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         ButterKnife.bind(this);
 
-        LinearLayoutManager layoutManager=new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvMsg.setLayoutManager(layoutManager);
         adapter = new MsgAdapter(msgList);
         rvMsg.setAdapter(adapter);
@@ -58,13 +59,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-
-
+    //发送消息
     @OnClick(R.id.bt_send)
     public void onViewClicked() {
 
-        final String content=etInput.getText().toString();
-        if("".equals(content))
+        final String content = etInput.getText().toString();
+        if ("".equals(content))
             return;
 
         msgList.add(new Msg(content, Msg.TYPE.SENT));
@@ -73,12 +73,9 @@ public class ChatActivity extends AppCompatActivity {
         int newSize = msgList.size() - 1;
         adapter.notifyItemInserted(newSize);
         rvMsg.scrollToPosition(newSize);
-
         //清空输入框中的内容
         etInput.setText("");
-
-
-        if (os==null)return;
+        if (os == null) return;
         new Thread() {
             @Override
             public void run() {
@@ -86,7 +83,6 @@ public class ChatActivity extends AppCompatActivity {
                 byte[] sendBytes = content.getBytes();
                 //然后将消息的长度优先发送出去
                 try {
-
                     os.write(sendBytes.length >> 8);
                     os.write(sendBytes.length);
                     //然后将消息再次发送出去
@@ -100,11 +96,41 @@ public class ChatActivity extends AppCompatActivity {
         }.start();
     }
 
+    @OnClick(R.id.bt_login)
+    public void login() {
+
+        final String content = etInput.getText().toString();
+        if ("".equals(content))
+            return;
+
+        Gson gson = new Gson();
+        User user = new User();
+        user.setPassWord("123");
+        user.setUserName(content);
+        final String message = gson.toJson(user);
+
+        new Thread() {
+            @Override
+            public void run() {
+                //首先需要计算得知消息的长度
+                byte[] sendBytes = message.getBytes();
+                //然后将消息的长度优先发送出去
+                try {
+                    os.write(sendBytes.length >> 8);
+                    os.write(sendBytes.length);
+                    //然后将消息再次发送出去
+                    os.write(sendBytes);
+                    os.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
 
 
-
-
-    public void ClineSocket(){
+    //获取一个连接
+    public void ClineSocket() {
         new Thread() {
             @Override
             public void run() {
@@ -117,8 +143,6 @@ public class ChatActivity extends AppCompatActivity {
                     // 4.获取一个输出流，向客户端输出信息,响应客户端的请求
                     // 字节输出流
                     os = so.getOutputStream();
-
-
                     //接收数据
                     byte[] bytes;
                     while (true) {
@@ -130,10 +154,7 @@ public class ChatActivity extends AppCompatActivity {
                         int length = (first << 8) + second;
                         bytes = new byte[length];
                         is.read(bytes);
-
-
                         final String msg = new String(bytes, "utf-8");
-
 
                         System.out.println(msg);
 
@@ -169,4 +190,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         }.start();
     }
+
+
 }
