@@ -42,5 +42,6 @@ dependencies {
     api 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
     api 'com.squareup.okhttp3:logging-interceptor:3.10.0'
 
-
+    api 'com.tapadoo.android:alerter:3.0.0'
+    api 'org.jetbrains.kotlin:kotlin-stdlib-jre7:1.2.0'
 }

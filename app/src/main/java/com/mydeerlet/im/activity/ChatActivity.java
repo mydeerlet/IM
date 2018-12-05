@@ -10,8 +10,10 @@ import android.widget.EditText;
 import com.google.gson.Gson;
 import com.mydeerlet.im.R;
 import com.mydeerlet.im.adapter.MsgAdapter;
+import com.mydeerlet.im.bean.HeadMsg;
 import com.mydeerlet.im.bean.Msg;
 import com.mydeerlet.im.bean.User;
+import com.mydeerlet.im.utils.SPUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +43,7 @@ public class ChatActivity extends AppCompatActivity {
     private Socket so;
     private OutputStream os;
     private InputStream is;
-
+    Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,14 @@ public class ChatActivity extends AppCompatActivity {
 
         msgList.add(new Msg(content, Msg.TYPE.SENT));
 
+
+        HeadMsg headMsg =new HeadMsg();
+        headMsg.setImCode(SPUtils.getCurrentUser(this).getImCode());
+        headMsg.setMsg(content);
+        final String sendMSG =  gson.toJson(headMsg);
+
+
+
         //如果有新消息，则设置适配器的长度（通知适配器，有新的数据被插入），并让 RecyclerView 定位到最后一行
         int newSize = msgList.size() - 1;
         adapter.notifyItemInserted(newSize);
@@ -80,7 +90,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void run() {
                 //首先需要计算得知消息的长度
-                byte[] sendBytes = content.getBytes();
+                byte[] sendBytes = sendMSG.getBytes();
                 //然后将消息的长度优先发送出去
                 try {
                     os.write(sendBytes.length >> 8);
@@ -99,14 +109,10 @@ public class ChatActivity extends AppCompatActivity {
     @OnClick(R.id.bt_login)
     public void login() {
 
-        final String content = etInput.getText().toString();
-        if ("".equals(content))
-            return;
+        if (os==null)return;
 
-        Gson gson = new Gson();
         User user = new User();
-        user.setPassWord("123");
-        user.setUserName(content);
+        user.setImCode(SPUtils.getCurrentUser(this).getImCode());
         final String message = gson.toJson(user);
 
         new Thread() {
