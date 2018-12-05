@@ -17,6 +17,9 @@ import com.mydeerlet.im.utils.LogUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -51,8 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         RetrofitManager.getInstance(this)
                 .create(LoginService.class)
                 .getMessage("北京")
-                .observeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .compose(this.<UpdateModel>scheduleSingle())
                 .subscribe(new Consumer<UpdateModel>() {
                     @Override
                     public void accept(UpdateModel updateModel) throws Exception {
@@ -61,5 +63,14 @@ public class LoginActivity extends AppCompatActivity {
                 },new RxException<Throwable>());
 
 
+    }
+
+    public <T>SingleTransformer<T,T> scheduleSingle(){
+        return new SingleTransformer<T, T>() {
+            @Override
+            public SingleSource<T> apply(Single<T> upstream) {
+                return upstream.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+            }
+        };
     }
 }
