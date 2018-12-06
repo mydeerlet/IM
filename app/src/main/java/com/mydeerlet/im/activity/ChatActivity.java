@@ -6,6 +6,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.mydeerlet.im.R;
@@ -45,19 +46,26 @@ public class ChatActivity extends AppCompatActivity {
     private InputStream is;
     Gson gson = new Gson();
 
+    private String imCode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         ButterKnife.bind(this);
 
+
+        imCode = getIntent().getStringExtra("imCode");
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvMsg.setLayoutManager(layoutManager);
         adapter = new MsgAdapter(msgList);
         rvMsg.setAdapter(adapter);
-
         //连接服务器
+        if (imCode!=null)
         ClineSocket();
+
+        Toast.makeText(this, imCode, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -73,7 +81,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
         HeadMsg headMsg =new HeadMsg();
-        headMsg.setImCode(SPUtils.getCurrentUser(this).getImCode());
+        headMsg.setImCode(imCode);
         headMsg.setMsg(content);
         final String sendMSG =  gson.toJson(headMsg);
 
@@ -108,8 +116,9 @@ public class ChatActivity extends AppCompatActivity {
 
     @OnClick(R.id.bt_login)
     public void login() {
-
+        ClineSocket();
         if (os==null)return;
+
 
         User user = new User();
         user.setImCode(SPUtils.getCurrentUser(this).getImCode());

@@ -1,7 +1,9 @@
 package com.mydeerlet.im.api;
 
 
+import com.mydeerlet.im.Constant;
 import com.mydeerlet.im.utils.LogUtils;
+import com.mydeerlet.im.utils.ToastFactory;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -85,6 +87,6 @@ public class RxException<T extends Throwable> implements Consumer<T> {
 
     public void onShowMessage(String msg){
         LogUtils.e("RxException",msg);
-//        ToastFactory.getToast(Constant.getInstance().getContext(),msg).show();
+        ToastFactory.getToast(Constant.getInstance().getContext(),msg).show();
     }
 }

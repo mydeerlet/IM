@@ -100,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                         }else {
                             Toast.makeText(LoginActivity.this, userHttpResult.getMessage(), Toast.LENGTH_SHORT).show();
                         }
+
                     }
                 },new RxException<Throwable>());
 
